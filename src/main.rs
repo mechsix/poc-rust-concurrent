@@ -1,25 +1,45 @@
+use std::borrow::Borrow;
 use std::time::{SystemTime, UNIX_EPOCH};
 use rand::{thread_rng, Rng};
+use std::thread;
+use std::time::Duration;
+use std::rc::Rc;
+use rand::rngs::ThreadRng;
 
+const SAMPLES: i32 = 100000;
+const THREADS: i32 = 5;
 
-fn calc_pi(samples: i32) -> f64 {
+fn sample_pi() -> f64 {
     let mut rnd = thread_rng();
-    let mut counter = 0;
-
-    for _i in 0..samples {
-        let x = rnd.gen::<f64>();
-        let y = rnd.gen::<f64>();
-        if x.powi(2) + y.powi(2) < 1.0 {
-            counter += 1;
-        }
+    let x = rnd.gen::<f64>();
+    let y = rnd.gen::<f64>();
+    if x.powi(2) + y.powi(2) < 1.0 {
+        return 1.0
     }
-    (counter as f64 / samples as f64) * 4.0
+    0.0
+}
+
+fn calc_pi_loop() -> f64 {
+    let mut sum: f64 = 0.0;
+    for _i in 0..SAMPLES {
+        sum += sample_pi();
+    }
+    (sum / SAMPLES as f64) * 4.0
+}
+
+fn calc_pi_thread() -> f64 {
+    3.0
 }
 
 fn main() {
     let start = SystemTime::now().duration_since(UNIX_EPOCH).expect("");
-    println!("{}", calc_pi(1000000));
+    let pi = calc_pi_loop();
     let end = SystemTime::now().duration_since(UNIX_EPOCH).expect("");
 
-    println!("{:?}", end-start);
+    println!(
+        "Samples {}\nDuration: {:?}\nPi: {}",
+        SAMPLES,
+        end-start,
+        pi
+    )
 }
